@@ -1,0 +1,36 @@
+{
+  "name": "react-tree-dnd",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/react-tree-dnd/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@fluentui-contrib/nx-plugin:build"
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs react-tree-dnd {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": [
+          "packages/react-tree-dnd/**/*.ts",
+          "packages/react-tree-dnd/**/*.tsx"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/react-tree-dnd/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "type-check": {
+      "executor": "@fluentui-contrib/nx-plugin:type-check"
+    }
+  },
+  "tags": []
+}

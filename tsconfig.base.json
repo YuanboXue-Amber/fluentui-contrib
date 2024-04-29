@@ -44,6 +44,9 @@
       "@fluentui-contrib/react-themeless-provider": [
         "packages/react-themeless-provider/src/index.ts"
       ],
+      "@fluentui-contrib/react-tree-dnd": [
+        "packages/react-tree-dnd/src/index.ts"
+      ],
       "@fluentui-contrib/react-tree-grid": [
         "packages/react-tree-grid/src/index.ts"
       ],
