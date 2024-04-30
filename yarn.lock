@@ -1234,6 +1234,14 @@
     "@dnd-kit/utilities" "^3.2.2"
     tslib "^2.0.0"
 
+"@dnd-kit/sortable@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/sortable/-/sortable-8.0.0.tgz#086b7ac6723d4618a4ccb6f0227406d8a8862a96"
+  integrity sha512-U3jk5ebVXe1Lr7c2wU7SBZjcWdQP+j7peHJfCspnA81enlu88Mgd7CC8Q+pub9ubP7eKVETzJW+IBAhsqbSu/g==
+  dependencies:
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
 "@dnd-kit/utilities@^3.2.2":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@dnd-kit/utilities/-/utilities-3.2.2.tgz#5a32b6af356dc5f74d61b37d6f7129a4040ced7b"
@@ -6704,7 +6712,7 @@ core-js-pure@^3.23.3:
   resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.30.2.tgz#005a82551f4af3250dcfb46ed360fad32ced114e"
   integrity sha512-p/npFUJXXBkCCTIlEGBdghofn00jWG6ZOtdoIXSJmAu2QBvN0IqpZXWweOytcwE6cfx8ZvVUy1vw8zxhe4Y2vg==
 
-core-js@3.30.2, core-js@^3.6.5:
+core-js@3.30.2:
   version "3.30.2"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.30.2.tgz#6528abfda65e5ad728143ea23f7a14f0dcf503fc"
   integrity sha512-uBJiDmwqsbJCWHAwjrx3cvjbMXP7xD72Dmsn5LOJpiRmE3WbBbN5rCqQ2Qh6Ek6/eOrjlWngEynBWo4VxerQhg==
