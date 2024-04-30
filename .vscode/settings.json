@@ -41,6 +41,12 @@
   },
   "editor.rulers": [120],
   "eslint.workingDirectories": [{ "mode": "auto" }], // infer working directory based on .eslintrc/package.json location
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "files.associations": {
     "CODEOWNERS": "ini"
   },
