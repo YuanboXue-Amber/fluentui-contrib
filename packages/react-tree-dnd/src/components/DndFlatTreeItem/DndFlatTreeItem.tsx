@@ -8,7 +8,10 @@ import {
   useMergedRefs,
 } from '@fluentui/react-components';
 import { CSS } from '@dnd-kit/utilities';
-import { TypesafeActive, useTypeSafeSortable } from './DndTypeSafeTypes';
+import {
+  TypesafeActive,
+  useTypeSafeSortable,
+} from '../DndFlatTree/DndTypeSafeTypes';
 import { Data } from '@dnd-kit/core';
 
 const useDndFlatTreeItemStyles = makeStyles({

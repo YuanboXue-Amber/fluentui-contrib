@@ -1,2 +1,2 @@
-export { DndFlatTree } from './components/DndFlatTree';
-export {};
+export { DndFlatTreeDragOverlay } from './components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
+// TODO exports

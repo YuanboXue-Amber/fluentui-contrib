@@ -53,7 +53,6 @@ export function useHeadlessDndFlatTree<
     draggingId?: TreeItemValue;
   };
 } {
-  // TODO open close broken
   const [openItems, setOpenItems] = useControllableState<Set<TreeItemValue>>({
     state: options.openItems ? new Set(options.openItems) : undefined,
     defaultState: options.defaultOpenItems
@@ -72,30 +71,29 @@ export function useHeadlessDndFlatTree<
   );
 
   const currOpenItems = React.useRef<Set<TreeItemValue> | null>(null);
+  /**
+   * collapse all items in the subtree of the item with the given value
+   */
   const collapseSubTree = React.useCallback(
     (dndEvent: TypeSafeDragStartEvent<TData>, value?: TreeItemValue) => {
-      setOpenItems((prevOpenItems) => {
-        currOpenItems.current = new Set(prevOpenItems);
-        const nextOpenItems = new Set(prevOpenItems);
+      currOpenItems.current = new Set(openItems);
 
-        const parentValue = items.find(
-          (item) => item.value === value
-        )?.parentValue;
+      const nextOpenItems = new Set(openItems);
+      const parentValue = items.find(
+        (item) => item.value === value
+      )?.parentValue;
+      items.forEach((item) => {
+        if (item.parentValue === parentValue) {
+          nextOpenItems.delete(item.value);
+        }
+      });
 
-        items
-          .filter((item) => item.parentValue === parentValue)
-          .forEach(({ value }) => {
-            nextOpenItems.delete(value);
-          });
-
-        handleOpenChange?.(dndEvent, {
-          openItems: nextOpenItems,
-          type: 'DragStart',
-        });
-        return nextOpenItems;
+      handleOpenChange?.(dndEvent, {
+        openItems: nextOpenItems,
+        type: 'DragStart',
       });
     },
-    [handleOpenChange, items, setOpenItems]
+    [handleOpenChange, items, openItems]
   );
   const restoreOpenItems = React.useCallback(
     (
@@ -103,7 +101,6 @@ export function useHeadlessDndFlatTree<
       type: 'DragEnd' | 'DragCancel'
     ) => {
       if (currOpenItems.current) {
-        setOpenItems(currOpenItems.current);
         handleOpenChange?.(dndEvent.activatorEvent, {
           type,
           openItems: currOpenItems.current,
@@ -111,7 +108,7 @@ export function useHeadlessDndFlatTree<
       }
       currOpenItems.current = null;
     },
-    [handleOpenChange, setOpenItems]
+    [handleOpenChange]
   );
 
   const headlessTree = useHeadlessFlatTree_unstable(items, {
@@ -137,53 +134,45 @@ export function useHeadlessDndFlatTree<
 
   const handleDragCancel = React.useCallback(
     (dndEvent: TypeSafeDragCancelEvent<TData>) => {
-      if (onDragCancel) {
-        onDragCancel({
-          ...dndEvent,
-          headlessTree,
-          ...getDragState(dndEvent, headlessTree),
-        });
-      }
+      onDragCancel?.({
+        ...dndEvent,
+        headlessTree,
+        ...getDragState(dndEvent, headlessTree, openItems),
+      });
 
       setActiveItem(null);
       restoreOpenItems(dndEvent, 'DragCancel');
 
       // TODO restore focus?
     },
-    [headlessTree, onDragCancel, restoreOpenItems]
+    [headlessTree, onDragCancel, openItems, restoreOpenItems]
   );
 
   const handleDragEnd = React.useCallback(
     (dndEvent: TypeSafeDragEndEvent<TData>) => {
-      if (onDragEnd) {
-        onDragEnd({
-          ...dndEvent,
-          headlessTree,
-          ...getDragState(dndEvent, headlessTree),
-        });
-      }
+      onDragEnd?.({
+        ...dndEvent,
+        headlessTree,
+        ...getDragState(dndEvent, headlessTree, openItems),
+      });
 
       restoreOpenItems(dndEvent, 'DragEnd');
       setActiveItem(null);
 
       // TODO focus on drop?
     },
-    [headlessTree, onDragEnd, restoreOpenItems]
+    [headlessTree, onDragEnd, openItems, restoreOpenItems]
   );
 
   const handleDragOver = React.useCallback(
     (dndEvent: TypeSafeDragOverEvent<TData>) => {
-      // TODO focus on overlay item
-
-      if (onDragOver) {
-        onDragOver({
-          ...dndEvent,
-          headlessTree,
-          ...getDragState(dndEvent, headlessTree),
-        });
-      }
+      onDragOver?.({
+        ...dndEvent,
+        headlessTree,
+        ...getDragState(dndEvent, headlessTree, openItems),
+      });
     },
-    [headlessTree, onDragOver]
+    [headlessTree, onDragOver, openItems]
   );
 
   const getDndProps = React.useCallback(
@@ -235,7 +224,8 @@ const getDragState = <TData, TProps extends HeadlessFlatTreeItemProps>(
     | TypeSafeDragEndEvent<TData>
     | TypeSafeDragOverEvent<TData>,
 
-  headlessTree: HeadlessFlatTree<TProps>
+  headlessTree: HeadlessFlatTree<TProps>,
+  openItems: Set<TreeItemValue>
 ): DragUpdateData => {
   const activeData = active.data.current;
   const overData = over?.data?.current;
@@ -270,14 +260,19 @@ const getDragState = <TData, TProps extends HeadlessFlatTreeItemProps>(
     ({ value }) => value === overItem.parentValue
   );
 
+  const dropAsFirstChild =
+    overItem.itemType === 'branch' && openItems.has(overItem.value);
+
   return {
     parentValue: {
       old: item.parentValue,
-      new: overItem.parentValue,
+      new: dropAsFirstChild ? overItem.value : overItem.parentValue,
     },
     position: {
       old: activeData.sortable.index - parentItemIndex - 1,
-      new: overData.sortable.index - overItemParentIndex - 1,
+      new: dropAsFirstChild
+        ? 0
+        : overData.sortable.index - overItemParentIndex - 1,
     },
     index: {
       old: activeData.sortable.index,

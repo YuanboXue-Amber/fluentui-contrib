@@ -22,9 +22,9 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { TreeClass } from '../../src/components/DndFlatTree/treeHelper';
 import { useHeadlessDndFlatTree } from '../../src/components/DndFlatTree/useHeadlessDndFlatTree';
 import { DragEndState } from '../../src/components/DndFlatTree/types';
-import { DndFlatTreeItem } from '../../src/components/DndFlatTree/DndFlatTreeItem';
-import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTree/DndFlatTreeDragOverlay';
 import { useDndContextProps } from '../../src/components/DndFlatTree/useDndContextProps';
+import { DndFlatTreeItem } from '../../src/components/DndFlatTreeItem/DndFlatTreeItem';
+import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
 
 type NestedItemProps = HeadlessFlatTreeItemProps & {
   subtree?: NestedItemProps[];

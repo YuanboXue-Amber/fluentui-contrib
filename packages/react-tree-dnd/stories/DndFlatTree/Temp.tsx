@@ -30,8 +30,8 @@ import { DragEndState } from '../../src/components/DndFlatTree/types';
 import {
   DndFlatTreeItem,
   useSortableFlatTreeItem,
-} from '../../src/components/DndFlatTree/DndFlatTreeItem';
-import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTree/DndFlatTreeDragOverlay';
+} from '../../src/components/DndFlatTreeItem/DndFlatTreeItem';
+import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
 import { useDndContextProps } from '../../src/components/DndFlatTree/useDndContextProps';
 
 type DndData = {

@@ -26,6 +26,15 @@ type FlatTreeNodeForRender<Props extends ExtrinsicTreeItemProps> = Props & {
   position: number;
 };
 
+const ROOT_VALUE: TreeItemValue = '__fuiTreeHelperRoot';
+class TreeRootNode<Props extends ExtrinsicTreeItemProps> {
+  public itemType: TreeItemType = 'branch';
+
+  public value: TreeItemValue = ROOT_VALUE;
+
+  public subtree: TreeNode<Props>[] = [];
+}
+
 class TreeNode<Props extends ExtrinsicTreeItemProps> {
   /**
    * @internal
@@ -35,14 +44,14 @@ class TreeNode<Props extends ExtrinsicTreeItemProps> {
   public itemType: TreeItemType;
 
   public value: TreeItemValue;
-  public parentValue?: TreeItemValue;
+  public parentValue: TreeItemValue;
 
   public subtree: TreeNode<Props>[];
 
   constructor(
     props: Props & {
       value: TreeItemValue;
-      parentValue?: TreeItemValue;
+      parentValue: TreeItemValue;
       itemType?: TreeItemType;
     }
   ) {
@@ -56,8 +65,8 @@ class TreeNode<Props extends ExtrinsicTreeItemProps> {
 }
 
 export class TreeClass<Props extends ExtrinsicTreeItemProps> {
+  private rootNode = new TreeRootNode<Props>();
   private nodes: Map<TreeItemValue, TreeNode<Props>>;
-  private rootNodes: TreeNode<Props>[];
 
   constructor(
     nodes: (Props & {
@@ -68,7 +77,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
     })[] = []
   ) {
     this.nodes = new Map();
-    this.rootNodes = [];
+    this.nodes.set(this.rootNode.value, this.rootNode as TreeNode<Props>);
 
     nodes.forEach((node) => {
       this.addNode(node);
@@ -90,34 +99,30 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       return;
     }
 
-    const newNode = new TreeNode(props);
+    const newNode = new TreeNode({
+      ...props,
+      parentValue: parentValue ?? this.rootNode.value,
+    });
 
-    if (!parentValue) {
-      if (position !== undefined) {
-        this.rootNodes.splice(position, 0, newNode);
-      } else {
-        this.rootNodes.push(newNode);
-      }
+    const parentNode = this.nodes.get(parentValue ?? this.rootNode.value);
+
+    if (!parentNode) {
+      console.error(
+        `[Tree addNode] Parent node with value ${parentValue} not found.`
+      );
+      return;
+    }
+    if (parentNode.itemType === 'leaf') {
+      console.error(
+        `[Tree addNode] Parent node with value ${parentValue} is a leaf node. Cannot add children to leaf nodes.\n` +
+          `Change the parent node to a branch node via \`updateNode\` method.`
+      );
+      return;
+    }
+    if (position !== undefined) {
+      parentNode.subtree.splice(position, 0, newNode);
     } else {
-      const parentNode = this.nodes.get(parentValue);
-      if (!parentNode) {
-        console.error(
-          `[Tree addNode] Parent node with value ${parentValue} not found.`
-        );
-        return;
-      }
-      if (parentNode.itemType === 'leaf') {
-        console.error(
-          `[Tree addNode] Parent node with value ${parentValue} is a leaf node. Cannot add children to leaf nodes.\n` +
-            `Change the parent node to a branch node via \`updateNode\` method.`
-        );
-        return;
-      }
-      if (position !== undefined) {
-        parentNode.subtree.splice(position, 0, newNode);
-      } else {
-        parentNode.subtree.push(newNode);
-      }
+      parentNode.subtree.push(newNode);
     }
 
     this.nodes.set(value, newNode);
@@ -157,23 +162,20 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
     this.nodes.delete(value);
 
     // Remove from parent subtree
-    if (!nodeToRemove.parentValue) {
-      this.rootNodes = this.rootNodes.filter((node) => node.value !== value);
-    } else {
-      const parentNode = this.nodes.get(nodeToRemove.parentValue);
-      if (!parentNode) {
-        return;
-      }
-      parentNode.subtree = parentNode.subtree.filter(
-        (node) => node.value !== value
-      );
+
+    const parentNode = this.nodes.get(nodeToRemove.parentValue);
+    if (!parentNode) {
+      return;
     }
+    parentNode.subtree = parentNode.subtree.filter(
+      (node) => node.value !== value
+    );
   }
 
   public moveNode(
     value: TreeItemValue,
-    parentValue?: TreeItemValue,
-    position?: number
+    parentValue?: TreeItemValue, // when not specified, move to the root level
+    position?: number // when not specified, move to the end of the parent subtree
   ): void {
     const nodeToMove = this.nodes.get(value);
     if (!nodeToMove) {
@@ -181,44 +183,38 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       return;
     }
 
-    const moveInSameSubtree = (
-      subtree: TreeNode<Props>[],
-      nodeToMove: TreeNode<Props>,
-      position?: number
-    ) => {
-      const filteredSubtree = subtree.filter(
-        (node) => node.value !== nodeToMove.value
-      );
+    const moveToSubtree = (targetSubtree: TreeNode<Props>[]) => {
       if (position !== undefined) {
-        filteredSubtree.splice(position, 0, nodeToMove);
+        targetSubtree.splice(position, 0, nodeToMove);
       } else {
-        filteredSubtree.push(nodeToMove);
+        targetSubtree.push(nodeToMove);
       }
-      return filteredSubtree;
     };
 
-    if (!parentValue && !nodeToMove.parentValue) {
-      this.rootNodes = moveInSameSubtree(this.rootNodes, nodeToMove, position);
-    } else if (
-      (!parentValue && nodeToMove.parentValue) ||
-      (parentValue && nodeToMove.parentValue === parentValue)
-    ) {
-      const parentNode = this.nodes.get(nodeToMove.parentValue);
-      if (!parentNode) {
-        console.error(
-          `[Tree moveNode] Parent node with value ${parentValue} not found.`
-        );
-        return;
-      }
-      parentNode.subtree = moveInSameSubtree(
-        parentNode.subtree,
-        nodeToMove,
-        position
+    const sourceParentNode = this.nodes.get(nodeToMove.parentValue);
+    if (!sourceParentNode) {
+      console.error(
+        `[Tree moveNode] Parent node with value ${nodeToMove.parentValue} for node with value ${value} not found.`
       );
-    } else {
-      this.removeNode(value);
-      this.addNode({ ...nodeToMove._nodeProps, value, parentValue, position });
+      return;
     }
+    sourceParentNode.subtree = sourceParentNode.subtree.filter(
+      (child) => child.value !== value
+    );
+
+    const targetParentNode = !parentValue
+      ? this.rootNode
+      : parentValue === sourceParentNode.value
+      ? sourceParentNode
+      : this.nodes.get(parentValue);
+    if (!targetParentNode) {
+      console.error(
+        `[Tree moveNode] Parent node with value ${parentValue} not found.`
+      );
+      return;
+    }
+    nodeToMove.parentValue = targetParentNode.value;
+    moveToSubtree(targetParentNode.subtree);
   }
 
   public getTree(
@@ -233,7 +229,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       return node;
     }
 
-    return this.rootNodes;
+    return this.rootNode.subtree;
   }
 
   public getTreeForRender(
@@ -285,7 +281,8 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
     return {
       ...node._nodeProps,
       value: node.value,
-      parentValue: node.parentValue,
+      parentValue:
+        node.parentValue === this.rootNode.value ? undefined : node.parentValue,
       itemType: node.itemType,
       subtree: node.subtree.map((child) => this.createTreeItemForRender(child)),
     };
