@@ -4,12 +4,11 @@ import {
   useSensors,
   MouseSensor,
   TouchSensor,
-  Modifier,
-  DndContext,
+  KeyboardCode,
   KeyboardSensor,
 } from '@dnd-kit/core';
 import { snapCenterToCursor, restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { getEventCoordinates } from '@dnd-kit/utilities';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 const mouseSensorOptions = {
   activationConstraint: {
@@ -24,10 +23,11 @@ const touchSensorOptions = {
 };
 const keyboardSensorOptions = {
   keyboardCodes: {
-    start: [],
-    cancel: [],
-    end: [],
+    start: ['AltLeft', 'AltRight'],
+    cancel: [KeyboardCode.Esc],
+    end: [KeyboardCode.Space, KeyboardCode.Enter],
   },
+  coordinateGetter: sortableKeyboardCoordinates,
 };
 
 export const useDndContextProps = () => {
@@ -35,7 +35,6 @@ export const useDndContextProps = () => {
     useSensor(MouseSensor, mouseSensorOptions),
     useSensor(TouchSensor, touchSensorOptions),
     useSensor(KeyboardSensor, keyboardSensorOptions)
-    // useSensor(CustomKeyboardSensor, keyboardSensor)
   );
 
   return {

@@ -1,30 +1,25 @@
 import * as React from 'react';
 import {
   TreeItemLayout,
-  useEventCallback,
   FlatTree,
-  TreeItemValue,
-  FlatTreeProps,
   flattenTree_unstable,
   HeadlessFlatTreeItemProps,
+  FlatTreeItemProps,
+  makeStyles,
+  mergeClasses,
+  useMergedRefs,
+  FlatTreeItem,
 } from '@fluentui/react-components';
-import {
-  closestCorners,
-  useSensor,
-  useSensors,
-  MouseSensor,
-  TouchSensor,
-  Modifier,
-  DndContext,
-} from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { TreeClass } from '../../src/components/DndFlatTree/treeHelper';
 import { useHeadlessDndFlatTree } from '../../src/components/DndFlatTree/useHeadlessDndFlatTree';
 import { DragEndState } from '../../src/components/DndFlatTree/types';
-import { useDndContextProps } from '../../src/components/DndFlatTree/useDndContextProps';
-import { DndFlatTreeItem } from '../../src/components/DndFlatTreeItem/DndFlatTreeItem';
+import { useDndContextProps } from '../../src/dnd/useDndContextProps';
 import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
+import { useSortableTreeItemProps } from '../../src/components/DndFlatTreeItem/useSortableTreeItemProps';
 
 type NestedItemProps = HeadlessFlatTreeItemProps & {
   subtree?: NestedItemProps[];
@@ -82,10 +77,7 @@ export const Default = () => {
   const [treeHelper] = React.useState(new TreeClass(defaultItems));
 
   const handleDragEnd = React.useCallback(
-    ({
-      headlessTree,
-      ...state
-    }: DragEndState<Record<string, never>, HeadlessFlatTreeItemProps>) => {
+    (state: DragEndState<Record<string, never>, HeadlessFlatTreeItemProps>) => {
       console.log('onDragEnd state', state);
 
       if (state.parentValue.new && !Number.isNaN(state.position.new)) {
@@ -104,12 +96,8 @@ export const Default = () => {
 
   const headlessTree = useHeadlessDndFlatTree(
     allItems,
-    {
-      defaultOpenItems,
-    },
-    {
-      onDragEnd: handleDragEnd,
-    }
+    { defaultOpenItems },
+    { onDragEnd: handleDragEnd }
   );
   const { onDragStart, onDragOver, onDragEnd, onDragCancel, draggingId } =
     headlessTree.getDndProps();
@@ -117,8 +105,6 @@ export const Default = () => {
   const dndItems = Array.from(headlessTree.items()).map((item) => ({
     id: item.value,
   }));
-
-  // ---------------------
 
   const dndContextProps = useDndContextProps();
 
@@ -131,15 +117,9 @@ export const Default = () => {
         onDragEnd={onDragEnd}
         onDragOver={onDragOver}
         onDragStart={onDragStart}
-
         // TODO accessibility={accessibility}
       >
-        <SortableContext
-          items={dndItems}
-          strategy={
-            rectSortingStrategy // verticalListSortingStrategy also seems to work as long as there's snapCenterToCursor modifier
-          }
-        >
+        <SortableContext items={dndItems} strategy={rectSortingStrategy}>
           <div style={{ height: '80vh', overflow: 'auto' }}>
             <FlatTree {...headlessTree.getTreeProps()} aria-label="Flat Tree">
               {Array.from(headlessTree.items(), (flatTreeItem) => {
@@ -162,3 +142,52 @@ export const Default = () => {
     </>
   );
 };
+
+const useDndFlatTreeItemStyles = makeStyles({
+  isDisabled: {
+    opacity: 0.5,
+  },
+  isHidden: {
+    opacity: 0,
+  },
+});
+const DndFlatTreeItem = React.forwardRef<HTMLDivElement, FlatTreeItemProps>(
+  (props, ref) => {
+    const {
+      sortableResult: {
+        // active,
+        isDragging,
+        // over,
+        setNodeRef,
+        transform,
+        transition,
+      },
+      ...propsWithDndAttributes
+    } = useSortableTreeItemProps(props);
+
+    const styles = useDndFlatTreeItemStyles();
+    const className = mergeClasses(
+      isDragging && styles.isHidden,
+      propsWithDndAttributes.className
+    );
+
+    const style = {
+      ...{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      },
+      ...propsWithDndAttributes.style,
+    };
+
+    const mergedRef = useMergedRefs<HTMLDivElement>(setNodeRef, ref);
+
+    return (
+      <FlatTreeItem
+        {...propsWithDndAttributes}
+        className={className}
+        style={style}
+        ref={mergedRef}
+      />
+    );
+  }
+);

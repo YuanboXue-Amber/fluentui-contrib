@@ -30,9 +30,9 @@ import { DragEndState } from '../../src/components/DndFlatTree/types';
 import {
   DndFlatTreeItem,
   useSortableFlatTreeItem,
-} from '../../src/components/DndFlatTreeItem/DndFlatTreeItem';
+} from '../../src/components/DndFlatTreeItem/useSortableTreeItemProps';
 import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
-import { useDndContextProps } from '../../src/components/DndFlatTree/useDndContextProps';
+import { useDndContextProps } from '../../src/dnd/useDndContextProps';
 
 type DndData = {
   isCustomOrdered?: boolean;

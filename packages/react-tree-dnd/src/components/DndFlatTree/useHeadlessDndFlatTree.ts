@@ -10,7 +10,7 @@ import {
   useFluent,
   useHeadlessFlatTree_unstable,
 } from '@fluentui/react-components';
-import { useControllableState, useTimeout } from '@fluentui/react-utilities';
+import { useControllableState } from '@fluentui/react-utilities';
 import { DndEventHandlers, DragUpdateData } from './types';
 import { DndContextProps } from '@dnd-kit/core';
 import {
@@ -20,8 +20,8 @@ import {
   TypesafeActive,
   TypeSafeDragOverEvent,
 } from './DndTypeSafeTypes';
+import { DRAG_OVERLAY_ELEMENT_ID } from '../DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
 
-// TODO TData = {} default
 export type OnDndFlatTreeOpenChange<TData> = (
   event: TreeOpenChangeEvent | Event | TypeSafeDragStartEvent<TData>,
   data:
@@ -142,8 +142,6 @@ export function useHeadlessDndFlatTree<
 
       setActiveItem(null);
       restoreOpenItems(dndEvent, 'DragCancel');
-
-      // TODO restore focus?
     },
     [headlessTree, onDragCancel, openItems, restoreOpenItems]
   );
@@ -158,21 +156,23 @@ export function useHeadlessDndFlatTree<
 
       restoreOpenItems(dndEvent, 'DragEnd');
       setActiveItem(null);
-
-      // TODO focus on drop?
     },
     [headlessTree, onDragEnd, openItems, restoreOpenItems]
   );
 
+  const { targetDocument } = useFluent();
   const handleDragOver = React.useCallback(
     (dndEvent: TypeSafeDragOverEvent<TData>) => {
+      // focus the drag overlay to prevent the focus from jumping to the next item
+      targetDocument?.getElementById?.(DRAG_OVERLAY_ELEMENT_ID)?.focus();
+
       onDragOver?.({
         ...dndEvent,
         headlessTree,
         ...getDragState(dndEvent, headlessTree, openItems),
       });
     },
-    [headlessTree, onDragOver, openItems]
+    [headlessTree, onDragOver, openItems, targetDocument]
   );
 
   const getDndProps = React.useCallback(

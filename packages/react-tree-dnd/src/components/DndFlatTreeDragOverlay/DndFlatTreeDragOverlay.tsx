@@ -5,6 +5,8 @@ import { DragOverlay } from '@dnd-kit/core';
 
 // TODO make this slot
 
+export const DRAG_OVERLAY_ELEMENT_ID = 'dnd-overlay-item';
+
 export const DndFlatTreeDragOverlay = ({
   draggingItemValue,
 }: {
@@ -50,7 +52,7 @@ export const DndFlatTreeDragOverlay = ({
     <DragOverlay>
       {draggingItemValue && (
         <div
-          id={'dnd-overlay-item'}
+          id={DRAG_OVERLAY_ELEMENT_ID}
           ref={ref}
           role="presentation"
           tabIndex={0}
