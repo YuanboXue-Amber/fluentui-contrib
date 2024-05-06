@@ -249,6 +249,7 @@ const DndFlatTreeItem = React.forwardRef<
 // NOTES:
 // 1. Helper item that is children of SortableContext, and calls useSortable to make sure the data for dragging item existing event if the item unmounted
 // 2. If collapse on drag start, scroll to the dragging item in an use effect to make sure the item is always mounted
+// 3. To show focus ring - render tree only when virtualItems.length > 0 - an empty Tree that has no children on 1st render won't have keyboard navigation initialized
 // TODO on keyboard drag, overlay item is overlaying the item after
 
 const HelperItem = ({ activeItemId }: { activeItemId: TreeItemValue }) => {
