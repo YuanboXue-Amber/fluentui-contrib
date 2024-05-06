@@ -150,27 +150,30 @@ export const Virtualized = () => {
       >
         <SortableContext items={dndItems} strategy={rectSortingStrategy}>
           <div style={{ height: '80vh', overflow: 'auto' }} ref={parentRef}>
-            <FlatTree
-              {...headlessTree.getTreeProps()}
-              aria-label="Flat Tree"
-              style={{
-                height: `${headlessVirtualTree.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {virtualItems.map((flatTreeItem) => {
-                const { getTreeItemProps, virtualItemProps } = flatTreeItem;
-                const treeItemProps = getTreeItemProps();
-                return (
-                  <DndFlatTreeItem
-                    key={treeItemProps.value}
-                    virtualItemProps={virtualItemProps}
-                    {...treeItemProps}
-                  />
-                );
-              })}
-            </FlatTree>
+            {/* An empty Tree that has no children on 1st render won't have keyboard navigation initialized. */}
+            {virtualItems.length && (
+              <FlatTree
+                {...headlessTree.getTreeProps()}
+                aria-label="Flat Tree"
+                style={{
+                  height: `${headlessVirtualTree.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {virtualItems.map((flatTreeItem) => {
+                  const { getTreeItemProps, virtualItemProps } = flatTreeItem;
+                  const treeItemProps = getTreeItemProps();
+                  return (
+                    <DndFlatTreeItem
+                      key={treeItemProps.value}
+                      virtualItemProps={virtualItemProps}
+                      {...treeItemProps}
+                    />
+                  );
+                })}
+              </FlatTree>
+            )}
           </div>
           {draggingId &&
           virtualItems.find((item) => item.value === draggingId) ? null : (
@@ -246,6 +249,7 @@ const DndFlatTreeItem = React.forwardRef<
 // NOTES:
 // 1. Helper item that is children of SortableContext, and calls useSortable to make sure the data for dragging item existing event if the item unmounted
 // 2. If collapse on drag start, scroll to the dragging item in an use effect to make sure the item is always mounted
+// TODO on keyboard drag, overlay item is overlaying the item after
 
 const HelperItem = ({ activeItemId }: { activeItemId: TreeItemValue }) => {
   // always render the item that is being dragged. make sure dnd kit can access the dnd data of this item. Otherwise, when the dragging item unmount, `active` data in dnd will be lost. And we're using active data sortable index in useHeadlessDndFlatTree.
