@@ -249,25 +249,38 @@ const getDragState = <TData, TProps extends HeadlessFlatTreeItemProps>(
     return defaultDragState;
   }
 
-  let newParentValue = overItem.parentValue;
-  let newPosition = overItem.position;
+  let newParentValue;
+  let newPosition;
 
-  // find the left sibling of the over item, if it is expanded, drop as last child.
-  let leftSibling;
-  for (let i = overItem.index - 1; i >= 0; i--) {
-    if (visibleItems[i].parentValue === overItem.parentValue) {
-      leftSibling = visibleItems[i];
-      break;
+  if (overData.sortable.index === 0) {
+    newParentValue = overItem.parentValue;
+    newPosition = 1;
+  } else {
+    let itemBeforeDropPosition;
+    if (activeData.sortable.index < overData.sortable.index) {
+      itemBeforeDropPosition = overItem;
+    } else {
+      itemBeforeDropPosition = visibleItems[overData.sortable.index - 1];
     }
-  }
 
-  if (
-    leftSibling &&
-    leftSibling.itemType === 'branch' &&
-    openItems.has(leftSibling.value)
-  ) {
-    newParentValue = leftSibling.value;
-    newPosition = leftSibling.childrenValues.length + 1;
+    if (
+      itemBeforeDropPosition.itemType === 'branch' &&
+      openItems.has(itemBeforeDropPosition.value)
+    ) {
+      // find the left sibling of the over item, if it is expanded, drop as last child.
+      newParentValue = itemBeforeDropPosition.value;
+      newPosition = 1;
+    } else {
+      newParentValue = itemBeforeDropPosition.parentValue;
+      newPosition = itemBeforeDropPosition.position + 1;
+      if (
+        item.parentValue === itemBeforeDropPosition.parentValue &&
+        itemBeforeDropPosition === overItem
+      ) {
+        // drag item from top over to another item in same parent
+        newPosition = itemBeforeDropPosition.position;
+      }
+    }
   }
 
   return {
