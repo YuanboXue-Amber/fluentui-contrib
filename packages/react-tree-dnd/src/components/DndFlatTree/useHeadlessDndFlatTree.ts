@@ -253,26 +253,35 @@ const getDragState = <TData, TProps extends HeadlessFlatTreeItemProps>(
     return defaultDragState;
   }
 
-  const parentItemIndex = visibleItems.findIndex(
-    ({ value }) => value === item.parentValue
-  );
-  const overItemParentIndex = visibleItems.findIndex(
-    ({ value }) => value === overItem.parentValue
-  );
+  let newParentValue = overItem.parentValue;
+  let newPosition = overItem.position;
 
-  const dropAsFirstChild =
-    overItem.itemType === 'branch' && openItems.has(overItem.value);
+  // find the left sibling of the over item, if it is expanded, drop as last child.
+  let leftSibling;
+  for (let i = overItem.index - 1; i >= 0; i--) {
+    if (visibleItems[i].parentValue === overItem.parentValue) {
+      leftSibling = visibleItems[i];
+      break;
+    }
+  }
+
+  if (
+    leftSibling &&
+    leftSibling.itemType === 'branch' &&
+    openItems.has(leftSibling.value)
+  ) {
+    newParentValue = leftSibling.value;
+    newPosition = leftSibling.childrenValues.length + 1;
+  }
 
   return {
     parentValue: {
       old: item.parentValue,
-      new: dropAsFirstChild ? overItem.value : overItem.parentValue,
+      new: newParentValue,
     },
     position: {
-      old: activeData.sortable.index - parentItemIndex - 1,
-      new: dropAsFirstChild
-        ? 0
-        : overData.sortable.index - overItemParentIndex - 1,
+      old: item.position,
+      new: newPosition,
     },
     index: {
       old: activeData.sortable.index,

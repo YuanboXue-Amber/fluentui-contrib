@@ -78,7 +78,11 @@ export const Default = () => {
 
   const handleDragEnd = React.useCallback(
     (state: DragEndState<Record<string, never>, HeadlessFlatTreeItemProps>) => {
-      console.log('onDragEnd state', state);
+      console.log(
+        'onDragEnd state',
+        state,
+        `drop to ${state.parentValue.new} at ${state.position.new}`
+      );
 
       if (state.parentValue.new && !Number.isNaN(state.position.new)) {
         treeHelper.moveNode(
@@ -155,9 +159,9 @@ const DndFlatTreeItem = React.forwardRef<HTMLDivElement, FlatTreeItemProps>(
   (props, ref) => {
     const {
       sortableResult: {
-        // active,
+        active,
         isDragging,
-        // over,
+        over,
         setNodeRef,
         transform,
         transition,

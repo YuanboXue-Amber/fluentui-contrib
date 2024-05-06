@@ -89,7 +89,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       value: TreeItemValue;
       parentValue?: TreeItemValue;
       itemType?: TreeItemType;
-      position?: number;
+      position?: number; // 1 based index
     }
   ): void {
     const { value, parentValue, position } = props;
@@ -120,7 +120,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       return;
     }
     if (position !== undefined) {
-      parentNode.subtree.splice(position, 0, newNode);
+      parentNode.subtree.splice(position - 1, 0, newNode);
     } else {
       parentNode.subtree.push(newNode);
     }
@@ -175,7 +175,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
   public moveNode(
     value: TreeItemValue,
     parentValue?: TreeItemValue, // when not specified, move to the root level
-    position?: number // when not specified, move to the end of the parent subtree
+    position?: number // 1 based index. when not specified, move to the end of the parent subtree
   ): void {
     const nodeToMove = this.nodes.get(value);
     if (!nodeToMove) {
@@ -185,7 +185,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
 
     const moveToSubtree = (targetSubtree: TreeNode<Props>[]) => {
       if (position !== undefined) {
-        targetSubtree.splice(position, 0, nodeToMove);
+        targetSubtree.splice(position - 1, 0, nodeToMove);
       } else {
         targetSubtree.push(nodeToMove);
       }
@@ -256,22 +256,23 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
     }
 
     if (Array.isArray(tree)) {
-      return tree.flatMap((root, index) => this.flattenTree(root, index));
+      return tree.flatMap((root, index) => this.flattenTree(root, index + 1));
     } else {
-      let position;
+      let position = 1;
       if (value) {
         const node = this.nodes.get(value);
         const parentNode =
           node?.parentValue !== undefined
-            ? this.nodes.get(node?.parentValue)
+            ? this.nodes.get(node.parentValue)
             : undefined;
         if (parentNode) {
-          position = parentNode.subtree.findIndex(
+          const index = parentNode.subtree.findIndex(
             (child) => child.value === value
           );
+          position = index === -1 ? 1 : index + 1;
         }
       }
-      return this.flattenTree(tree, position ?? 0);
+      return this.flattenTree(tree, position);
     }
   }
 
@@ -300,7 +301,7 @@ export class TreeClass<Props extends ExtrinsicTreeItemProps> {
       subtree: undefined,
     };
     const flattenedSubtree = node.subtree.flatMap((child, index) =>
-      this.flattenTree(child, index)
+      this.flattenTree(child, index + 1)
     );
     return [flattenedNode, ...flattenedSubtree];
   }

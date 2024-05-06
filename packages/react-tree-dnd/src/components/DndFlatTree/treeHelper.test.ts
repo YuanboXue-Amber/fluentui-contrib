@@ -8,17 +8,68 @@ describe('Tree', () => {
   });
 
   it('adds a node', () => {
-    tree.addNode({ value: 'node1', children: 'node1' });
+    tree.addNode({ value: 'node1', children: 'node1', itemType: 'branch' });
     expect(tree.getTree('node1')).toMatchInlineSnapshot(`
       TreeNode {
         "_nodeProps": {
           "children": "node1",
+          "itemType": "branch",
           "parentValue": "__fuiTreeHelperRoot",
           "value": "node1",
         },
-        "itemType": "leaf",
+        "itemType": "branch",
         "parentValue": "__fuiTreeHelperRoot",
         "subtree": [],
+        "value": "node1",
+      }
+    `);
+
+    tree.addNode({
+      value: 'node1-2',
+      parentValue: 'node1',
+      children: 'node1-2',
+    });
+    tree.addNode({
+      value: 'node1-1',
+      parentValue: 'node1',
+      children: 'node1-1',
+      position: 1,
+    });
+    expect(tree.getTree('node1')).toMatchInlineSnapshot(`
+      TreeNode {
+        "_nodeProps": {
+          "children": "node1",
+          "itemType": "branch",
+          "parentValue": "__fuiTreeHelperRoot",
+          "value": "node1",
+        },
+        "itemType": "branch",
+        "parentValue": "__fuiTreeHelperRoot",
+        "subtree": [
+          TreeNode {
+            "_nodeProps": {
+              "children": "node1-1",
+              "parentValue": "node1",
+              "position": 1,
+              "value": "node1-1",
+            },
+            "itemType": "leaf",
+            "parentValue": "node1",
+            "subtree": [],
+            "value": "node1-1",
+          },
+          TreeNode {
+            "_nodeProps": {
+              "children": "node1-2",
+              "parentValue": "node1",
+              "value": "node1-2",
+            },
+            "itemType": "leaf",
+            "parentValue": "node1",
+            "subtree": [],
+            "value": "node1-2",
+          },
+        ],
         "value": "node1",
       }
     `);
@@ -375,34 +426,34 @@ describe('Tree', () => {
         value: 'node1',
         children: 'node1',
         itemType: 'branch',
-        position: 0,
+        position: 1,
       },
       {
         value: 'node1-1',
         children: 'node1-1',
         itemType: 'leaf',
         parentValue: 'node1',
-        position: 0,
+        position: 1,
       },
       {
         value: 'node1-2',
         children: 'node1-2',
         itemType: 'branch',
         parentValue: 'node1',
-        position: 1,
+        position: 2,
       },
       {
         value: 'node1-2-1',
         children: 'node1-2-1',
         itemType: 'leaf',
         parentValue: 'node1-2',
-        position: 0,
+        position: 1,
       },
       {
         value: 'node2',
         children: 'node2',
         itemType: 'branch',
-        position: 1,
+        position: 2,
       },
     ]);
     expect(tree.getFlatTreeForRender('node1-2')).toEqual([
@@ -411,14 +462,14 @@ describe('Tree', () => {
         children: 'node1-2',
         itemType: 'branch',
         parentValue: 'node1',
-        position: 1,
+        position: 2,
       },
       {
         value: 'node1-2-1',
         children: 'node1-2-1',
         itemType: 'leaf',
         parentValue: 'node1-2',
-        position: 0,
+        position: 1,
       },
     ]);
   });
