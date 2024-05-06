@@ -8,7 +8,7 @@ import {
   TypeSafeDragEndEvent,
   TypeSafeDragOverEvent,
   TypeSafeDragStartEvent,
-} from '../../dnd/DndTypeSafeTypes';
+} from '../../dnd';
 
 export type DragStartState<
   TData = Record<string, never>,

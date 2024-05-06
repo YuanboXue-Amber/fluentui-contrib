@@ -139,7 +139,7 @@ export const Virtualized = () => {
 
   return (
     <>
-      <div style={{ padding: 10 }}>NOT virtualized:</div>
+      <div style={{ padding: 10 }}>Virtualized:</div>
       <DndContext
         {...dndContextProps}
         onDragCancel={onDragCancel}
