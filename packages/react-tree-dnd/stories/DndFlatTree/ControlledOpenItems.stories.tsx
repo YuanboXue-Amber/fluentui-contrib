@@ -231,11 +231,9 @@ const DndFlatTreeItem = React.forwardRef<HTMLDivElement, FlatTreeItemProps>(
     );
 
     const style = {
-      ...{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      },
       ...propsWithDndAttributes.style,
+      transform: CSS.Transform.toString(transform),
+      transition,
     };
 
     const mergedRef = useMergedRefs<HTMLDivElement>(setNodeRef, ref);

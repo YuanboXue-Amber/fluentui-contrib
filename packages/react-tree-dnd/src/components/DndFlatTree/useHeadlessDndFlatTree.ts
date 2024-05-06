@@ -37,23 +37,26 @@ type HeadlessDndFlatTreeItemProps<TData = Record<string, never>> =
     data?: TData;
   };
 
+export type HeadlessDndFlatTree<TProps extends HeadlessDndFlatTreeItemProps> =
+  HeadlessFlatTree<TProps> & {
+    getDndProps: () => Pick<
+      DndContextProps,
+      'onDragStart' | 'onDragOver' | 'onDragEnd' | 'onDragCancel'
+    > & {
+      draggingId?: TreeItemValue;
+    };
+  };
+
 export function useHeadlessDndFlatTree<
   TData = Record<string, never>,
-  TProps extends HeadlessDndFlatTreeItemProps<TData> = HeadlessDndFlatTreeItemProps<TData>
+  TProps extends HeadlessDndFlatTreeItemProps = HeadlessDndFlatTreeItemProps
 >(
   items: TProps[],
   options: Omit<HeadlessFlatTreeOptions, 'onOpenChange'> & {
     onOpenChange?: OnDndFlatTreeOpenChange<TData>;
   } = {},
   dndEventHandlers: DndEventHandlers<TData, TProps> = {}
-): HeadlessFlatTree<TProps> & {
-  getDndProps: () => Pick<
-    DndContextProps,
-    'onDragStart' | 'onDragOver' | 'onDragEnd' | 'onDragCancel'
-  > & {
-    draggingId?: TreeItemValue;
-  };
-} {
+): HeadlessDndFlatTree<TProps> {
   const [openItems, setOpenItems] = useControllableState<Set<TreeItemValue>>({
     state: options.openItems ? new Set(options.openItems) : undefined,
     defaultState: options.defaultOpenItems

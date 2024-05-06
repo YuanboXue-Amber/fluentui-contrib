@@ -2,6 +2,7 @@ export { useHeadlessDndFlatTree } from './components/DndFlatTree';
 
 export type {
   OnDndFlatTreeOpenChange,
+  HeadlessDndFlatTree,
   DragStartState,
   DragOverState,
   DragEndState,
