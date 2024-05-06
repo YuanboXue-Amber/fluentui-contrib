@@ -22,7 +22,7 @@ import {
 } from './DndTypeSafeTypes';
 import { DRAG_OVERLAY_ELEMENT_ID } from '../DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
 
-export type OnDndFlatTreeOpenChange<TData> = (
+export type OnDndFlatTreeOpenChange<TData = Record<string, never>> = (
   event: TreeOpenChangeEvent | Event | TypeSafeDragStartEvent<TData>,
   data:
     | TreeOpenChangeData
@@ -32,13 +32,14 @@ export type OnDndFlatTreeOpenChange<TData> = (
       }
 ) => void;
 
-type HeadlessDndFlatTreeItemProps<TData> = HeadlessFlatTreeItemProps & {
-  data?: TData;
-};
+type HeadlessDndFlatTreeItemProps<TData = Record<string, never>> =
+  HeadlessFlatTreeItemProps & {
+    data?: TData;
+  };
 
 export function useHeadlessDndFlatTree<
-  TData,
-  TProps extends HeadlessDndFlatTreeItemProps<TData>
+  TData = Record<string, never>,
+  TProps extends HeadlessDndFlatTreeItemProps<TData> = HeadlessDndFlatTreeItemProps<TData>
 >(
   items: TProps[],
   options: Omit<HeadlessFlatTreeOptions, 'onOpenChange'> & {
@@ -71,31 +72,23 @@ export function useHeadlessDndFlatTree<
   );
 
   const currOpenItems = React.useRef<Set<TreeItemValue> | null>(null);
-  /**
-   * collapse all items in the subtree of the item with the given value
-   */
-  const collapseSubTree = React.useCallback(
-    (dndEvent: TypeSafeDragStartEvent<TData>, value?: TreeItemValue) => {
-      currOpenItems.current = new Set(openItems);
 
-      const nextOpenItems = new Set(openItems);
-      const parentValue = items.find(
-        (item) => item.value === value
-      )?.parentValue;
-      items.forEach((item) => {
-        if (item.parentValue === parentValue) {
-          nextOpenItems.delete(item.value);
-        }
-      });
+  const collapseSubTree = useEventCallback(
+    (dndEvent: TypeSafeDragStartEvent<TData>, value: TreeItemValue) => {
+      setOpenItems((prevOpenItems) => {
+        currOpenItems.current = new Set(prevOpenItems);
+        const nextOpenItems = new Set(prevOpenItems);
+        nextOpenItems.delete(value);
 
-      handleOpenChange?.(dndEvent, {
-        openItems: nextOpenItems,
-        type: 'DragStart',
+        options.onOpenChange?.(dndEvent, {
+          openItems: nextOpenItems,
+          type: 'DragStart',
+        });
+        return nextOpenItems;
       });
-    },
-    [handleOpenChange, items, openItems]
+    }
   );
-  const restoreOpenItems = React.useCallback(
+  const restoreOpenItems = useEventCallback(
     (
       dndEvent: TypeSafeDragEndEvent<TData> | TypeSafeDragCancelEvent<TData>,
       type: 'DragEnd' | 'DragCancel'
@@ -107,8 +100,7 @@ export function useHeadlessDndFlatTree<
         });
       }
       currOpenItems.current = null;
-    },
-    [handleOpenChange]
+    }
   );
 
   const headlessTree = useHeadlessFlatTree_unstable(items, {
@@ -126,6 +118,7 @@ export function useHeadlessDndFlatTree<
     (dndEvent: TypeSafeDragStartEvent<TData>) => {
       onDragStart?.({ ...dndEvent, headlessTree });
 
+      // collapse the subtree of the active item. Otherwise the active item's children will stay in view when the active item is being dragged
       collapseSubTree(dndEvent, dndEvent.active.id);
       setActiveItem(dndEvent.active);
     },

@@ -9,14 +9,21 @@ import {
   mergeClasses,
   useMergedRefs,
   FlatTreeItem,
+  TreeItemValue,
 } from '@fluentui/react-components';
 import { DndContext } from '@dnd-kit/core';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import { TreeClass } from '../../src/components/DndFlatTree/treeHelper';
-import { useHeadlessDndFlatTree } from '../../src/components/DndFlatTree/useHeadlessDndFlatTree';
-import { DragEndState } from '../../src/components/DndFlatTree/types';
+import {
+  OnDndFlatTreeOpenChange,
+  useHeadlessDndFlatTree,
+} from '../../src/components/DndFlatTree/useHeadlessDndFlatTree';
+import {
+  DragEndState,
+  DragStartState,
+} from '../../src/components/DndFlatTree/types';
 import { useDndContextProps } from '../../src/dnd/useDndContextProps';
 import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
 import { useSortableTreeItemProps } from '../../src/components/DndFlatTreeItem/useSortableTreeItemProps';
@@ -70,14 +77,56 @@ const defaultItemsNested: NestedItemProps[] = [
 const defaultItems = flattenTree_unstable(defaultItemsNested);
 const defaultOpenItems = defaultItemsNested.map((item) => item.value);
 
-export const Customized = () => {
+const useCollapseSubTreeOnDrag = (allItems: HeadlessFlatTreeItemProps[]) => {
+  const [openItems, setOpenItems] = React.useState<Set<TreeItemValue>>(
+    new Set(defaultOpenItems)
+  );
+
+  const onOpenChange: OnDndFlatTreeOpenChange = (e, data) => {
+    if (data.type === 'DragStart') {
+      return;
+    }
+    setOpenItems(data.openItems);
+  };
+
+  const currOpenItems = React.useRef<Set<TreeItemValue> | null>(null);
+  /**
+   * collapse all items in the subtree of the item with the given value
+   */
+  const collapse = React.useCallback(
+    (value?: TreeItemValue) => {
+      setOpenItems((prevOpenItems) => {
+        currOpenItems.current = new Set(prevOpenItems);
+        const nextOpenItems = new Set(prevOpenItems);
+
+        const parentValue = allItems.find(
+          (item) => item.value === value
+        )?.parentValue;
+        allItems.forEach((item) => {
+          if (item.parentValue === parentValue) {
+            nextOpenItems.delete(item.value);
+          }
+        });
+        return nextOpenItems;
+      });
+    },
+    [allItems]
+  );
+
+  return { openItems, onOpenChange, collapse };
+};
+
+export const ControlledOpenItems = () => {
   const [allItems, setAllItems] =
     React.useState<HeadlessFlatTreeItemProps[]>(defaultItems);
 
   const [treeHelper] = React.useState(new TreeClass(defaultItems));
 
+  const { openItems, onOpenChange, collapse } =
+    useCollapseSubTreeOnDrag(allItems);
+
   const handleDragEnd = React.useCallback(
-    (state: DragEndState<Record<string, never>, HeadlessFlatTreeItemProps>) => {
+    (state: DragEndState) => {
       console.log('onDragEnd state', state);
 
       if (state.parentValue.new && !Number.isNaN(state.position.new)) {
@@ -93,11 +142,20 @@ export const Customized = () => {
     },
     [treeHelper]
   );
+  const handleDragStart = React.useCallback(
+    (state: DragStartState) => {
+      collapse(state.active.id);
+    },
+    [collapse]
+  );
 
   const headlessTree = useHeadlessDndFlatTree(
     allItems,
-    { defaultOpenItems },
-    { onDragEnd: handleDragEnd }
+    { openItems, onOpenChange },
+    {
+      onDragEnd: handleDragEnd,
+      onDragStart: handleDragStart,
+    }
   );
   const { onDragStart, onDragOver, onDragEnd, onDragCancel, draggingId } =
     headlessTree.getDndProps();
@@ -110,7 +168,10 @@ export const Customized = () => {
 
   return (
     <>
-      <div style={{ padding: 10 }}>NOT virtualized:</div>
+      <div style={{ padding: 10 }}>
+        NOT virtualized. Collapse all items in the current subtree on drag
+        start:
+      </div>
       <DndContext
         {...dndContextProps}
         onDragCancel={onDragCancel}

@@ -1,1 +1,0 @@
-export { Customized } from './Temp';

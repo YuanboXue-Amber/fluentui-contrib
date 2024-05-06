@@ -11,8 +11,8 @@ import {
 } from './DndTypeSafeTypes';
 
 export type DragStartState<
-  TData,
-  TProps extends HeadlessFlatTreeItemProps
+  TData = Record<string, never>,
+  TProps extends HeadlessFlatTreeItemProps = HeadlessFlatTreeItemProps
 > = TypeSafeDragStartEvent<TData> & {
   headlessTree: HeadlessFlatTree<TProps>;
 };
@@ -39,32 +39,32 @@ export type DragUpdateData = {
 };
 
 export type DragOverState<
-  TData,
-  TProps extends HeadlessFlatTreeItemProps
+  TData = Record<string, never>,
+  TProps extends HeadlessFlatTreeItemProps = HeadlessFlatTreeItemProps
 > = TypeSafeDragOverEvent<TData> &
   DragUpdateData & {
     headlessTree: HeadlessFlatTree<TProps>;
   };
 
 export type DragEndState<
-  TData,
-  TProps extends HeadlessFlatTreeItemProps
+  TData = Record<string, never>,
+  TProps extends HeadlessFlatTreeItemProps = HeadlessFlatTreeItemProps
 > = TypeSafeDragEndEvent<TData> &
   DragUpdateData & {
     headlessTree: HeadlessFlatTree<TProps>;
   };
 
 export type DragCancelState<
-  TData,
-  TProps extends HeadlessFlatTreeItemProps
+  TData = Record<string, never>,
+  TProps extends HeadlessFlatTreeItemProps = HeadlessFlatTreeItemProps
 > = TypeSafeDragCancelEvent<TData> &
   DragUpdateData & {
     headlessTree: HeadlessFlatTree<TProps>;
   };
 
 export type DndEventHandlers<
-  TData,
-  TProps extends HeadlessFlatTreeItemProps
+  TData = Record<string, never>,
+  TProps extends HeadlessFlatTreeItemProps = HeadlessFlatTreeItemProps
 > = {
   onDragCancel?: (state: DragCancelState<TData, TProps>) => void;
   onDragEnd?: (state: DragEndState<TData, TProps>) => void;
