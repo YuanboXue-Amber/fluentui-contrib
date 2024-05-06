@@ -1,19 +1,6 @@
 import * as React from 'react';
-import {
-  FlatTreeItemProps,
-  makeStyles,
-  mergeCallbacks,
-} from '@fluentui/react-components';
-import { useTypeSafeSortable } from '../DndFlatTree/DndTypeSafeTypes';
-
-const useDndFlatTreeItemStyles = makeStyles({
-  isDisabled: {
-    opacity: 0.5,
-  },
-  isHidden: {
-    opacity: 0,
-  },
-});
+import { FlatTreeItemProps, mergeCallbacks } from '@fluentui/react-components';
+import { useTypeSafeSortable } from '../../dnd';
 
 export function useSortableTreeItemProps<TData>(
   props: FlatTreeItemProps & {

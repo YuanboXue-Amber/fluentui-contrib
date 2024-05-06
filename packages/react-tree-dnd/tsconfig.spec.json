@@ -9,6 +9,7 @@
     "jest.config.ts",
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "stories/utils/**/*.test.ts"
   ]
 }

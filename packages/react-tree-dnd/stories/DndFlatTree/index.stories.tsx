@@ -1,10 +1,10 @@
 import { Meta } from '@storybook/react';
-import { DndFlatTree } from '@fluentui-contrib/react-tree-dnd';
+import { FlatTree } from '@fluentui/react-components';
 export { Default } from './Default.stories';
 export { ControlledOpenItems } from './ControlledOpenItems.stories';
 
-const meta: Meta<typeof DndFlatTree> = {
-  component: DndFlatTree,
+const meta: Meta<typeof FlatTree> = {
+  component: FlatTree,
 };
 
 export default meta;

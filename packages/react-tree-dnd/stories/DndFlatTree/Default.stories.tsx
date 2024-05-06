@@ -14,12 +14,15 @@ import { DndContext } from '@dnd-kit/core';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { TreeClass } from '../../src/components/DndFlatTree/treeHelper';
-import { useHeadlessDndFlatTree } from '../../src/components/DndFlatTree/useHeadlessDndFlatTree';
-import { DragEndState } from '../../src/components/DndFlatTree/types';
-import { useDndContextProps } from '../../src/dnd/useDndContextProps';
-import { DndFlatTreeDragOverlay } from '../../src/components/DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
-import { useSortableTreeItemProps } from '../../src/components/DndFlatTreeItem/useSortableTreeItemProps';
+import { TreeClass } from '../utils/treeHelper';
+
+import {
+  useSortableTreeItemProps,
+  useHeadlessDndFlatTree,
+  DragEndState,
+  useDndContextProps,
+  DndFlatTreeDragOverlay,
+} from '@fluentui-contrib/react-tree-dnd';
 
 type NestedItemProps = HeadlessFlatTreeItemProps & {
   subtree?: NestedItemProps[];

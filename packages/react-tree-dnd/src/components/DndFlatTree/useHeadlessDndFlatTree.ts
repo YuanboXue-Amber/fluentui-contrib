@@ -19,8 +19,8 @@ import {
   TypeSafeDragCancelEvent,
   TypesafeActive,
   TypeSafeDragOverEvent,
-} from './DndTypeSafeTypes';
-import { DRAG_OVERLAY_ELEMENT_ID } from '../DndFlatTreeDragOverlay/DndFlatTreeDragOverlay';
+} from '../../dnd';
+import { DRAG_OVERLAY_ELEMENT_ID } from '../DndFlatTreeDragOverlay';
 
 export type OnDndFlatTreeOpenChange<TData = Record<string, never>> = (
   event: TreeOpenChangeEvent | Event | TypeSafeDragStartEvent<TData>,
